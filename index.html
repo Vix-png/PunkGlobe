@@ -2,69 +2,50 @@
 <html lang="sv">
 <head>
   <meta charset="utf-8" />
-  <title>Punk Globe</title>
+  <title>PunkGlobe</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- 1) Ladda biblioteken FÖRST och med https -->
-  https://unpkg.com/three@0.158.0/build/three.min.js</script>
-  https://unpkg.com/globe.gl@3.9.0/dist/globe.gl.min.js</script>
-
   <style>
     html, body { margin:0; height:100%; background:#000; }
     #globe-container { width:100%; height:800px; }
     .gg-tooltip {
-      font-family: system-ui, Segoe UI, Arial, sans-serif;
-      background: rgba(20,20,20,.92); color:#fff; padding:8px 10px;
-      border-radius:6px; border:1px solid rgba(255,255,255,.2); max-width:240px;
+      font-family: Arial, sans-serif;
+      background: rgba(20,20,20,.9);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border:1px solid rgba(255,255,255,.2);
       pointer-events:none;
     }
-    .gg-tooltip a { color:#ffd35a; text-decoration:underline; }
   </style>
 </head>
+
 <body>
   <div id="globe-container"></div>
 
-  <!-- 2) Din egen kod SIST och också med defer -->
-  <script defer>
-    // Vänta tills både DOM och de tidigare <script defer> är klara
-    window.addEventListener('DOMContentLoaded', () => {
-      const bandMap = {
-        SWE: { country: "Sverige", band: "Refused", year: 1991, link: "https://sv.wikipedia.org/wiki/Refused" },
-        USA: { country: "USA", band: "Dead Kennedys", year: 1978, link: "https://en.wikipedia.org/wiki/Dead_Kennedys" },
-        GBR: { country: "Storbritannien", band: "The Clash", year: 1976, link: "https://en.wikipedia.org/wiki/The_Clash" }
-      };
+  <!-- 1️⃣ Ladda THREE.js först -->
+  <script srckg.com/three@0.158.0/build/three.min.js</script>
 
-      const container = document.getElementById('globe-container');
-      const globe = Globe()
-        .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-dark.jpg')
-        .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
-        .backgroundColor('#000')(container);
+  <!-- 2️⃣ Ladda Globe.gl EFTER three -->
+  https://unpkg.com/globe.gl@3.9.0/dist/globe.gl.min.js</script>
 
-      const controls = globe.controls();
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.6;
+  <!-- 3️⃣ Din egen kod SIST (måste vara sist!) -->
+  <script>
+    const bandMap = {
+      SWE: { country: "Sweden", band: "Refused", link: "https://sv.wikipedia.org/wiki/Refused" }
+    };
 
-      const COUNTRIES_GEOJSON =
-        'https://unpkg.com/three-globe@2.31.1/example/datasets/ne_110m_admin_0_countries.geojson';
+    const container = document.getElementById('globe-container');
+    const globe = Globe()
+      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .backgroundColor('#000')
+      (container);
 
-      fetch(COUNTRIES_GEOJSON)
-        .then(r => r.json())
-        .then(countries => {
-          globe
-            .polygonsData(countries.features.filter(f => f.properties?.ISO_A3 !== 'ATA'))
-            .polygonAltitude(d => 0.01)
-            .polygonSideColor(() => 'rgba(90,120,160,.25)')
-            .polygonCapColor(d => bandMap[d.properties.ISO_A3] ? 'rgba(255,85,85,.85)' : 'rgba(255,255,255,.18)')
-            .polygonLabel(d => {
-              const iso = d.properties.ISO_A3;
-              const info = bandMap[iso];
-              const name = d.properties.ADMIN || iso;
-              if (!info) return `<div class="gg-tooltip"><strong>${name}</strong><br><em>Inget band ännu</em></div>`;
-              return `<div class="gg-tooltip"><strong>${name}</strong><br>Band: <b>${info.band}</b>${info.year ? ' ('+info.year+')' : ''}<br>${info.link ? `<a hreflink}Mer info →</a>` : ''}</div>`;
-            });
-        })
-        .catch(err => console.error('Fel vid hämtning av GeoJSON:', err));
-    });
+    fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson')
+      .then(r => r.json())
+      .then(c => {
+        globe.polygonsData(c.features);
+      });
   </script>
 </body>
 </html>
