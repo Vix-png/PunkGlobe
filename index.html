@@ -2,50 +2,60 @@
 <html lang="sv">
 <head>
   <meta charset="utf-8" />
-  <title>PunkGlobe</title>
+  <title>PunkGlobe – Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     html, body { margin:0; height:100%; background:#000; }
     #globe-container { width:100%; height:800px; }
     .gg-tooltip {
-      font-family: Arial, sans-serif;
-      background: rgba(20,20,20,.9);
-      color: #fff;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border:1px solid rgba(255,255,255,.2);
-      pointer-events:none;
+      font-family: system-ui, Segoe UI, Arial, sans-serif;
+      background: rgba(20,20,20,.92);
+      color:#fff; padding:8px 10px; border-radius:6px;
+      border:1px solid rgba(255,255,255,.2); max-width:240px; pointer-events:none;
     }
   </style>
 </head>
-
 <body>
   <div id="globe-container"></div>
 
-  <!-- 1️⃣ Ladda THREE.js först -->
-  <script srckg.com/three@0.158.0/build/three.min.js</script>
-
-  <!-- 2️⃣ Ladda Globe.gl EFTER three -->
+  <!-- Ladda biblioteken i rätt ordning (THREE först, sedan Globe.gl) -->
+  https://unpkg.com/three@0.158.0/build/three.min.js</script>
   https://unpkg.com/globe.gl@3.9.0/dist/globe.gl.min.js</script>
 
-  <!-- 3️⃣ Din egen kod SIST (måste vara sist!) -->
+  <!-- Din kod sist, efter att Globe finns i global scope -->
   <script>
+    // Minimal data
     const bandMap = {
-      SWE: { country: "Sweden", band: "Refused", link: "https://sv.wikipedia.org/wiki/Refused" }
+      SWE: { country: "Sverige", band: "Refused", year: 1991, link: "https://sv.wikipedia.org/wiki/Refused" },
+      USA: { country: "USA", band: "Dead Kennedys", year: 1978, link: "https://en.wikipedia.org/wiki/Dead_Kennedys" }
     };
 
     const container = document.getElementById('globe-container');
+
+    // Skapa globen
     const globe = Globe()
-      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
-      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-dark.jpg')
+      .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
       .backgroundColor('#000')
       (container);
 
-    fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson')
-      .then(r => r.json())
-      .then(c => {
-        globe.polygonsData(c.features);
-      });
+    // Hämta länders polygoner
+    fetch('https://unpkg.com/three-globe@2.31.1/example/datasets/ne_110m_admin_0_countries.geojson')
+      .then(res => res.json())
+      .then(countries => {
+        globe
+          .polygonsData(countries.features.filter(f => f.properties?.ISO_A3 !== 'ATA'))
+          .polygonAltitude(() => 0.01)
+          .polygonCapColor(d => bandMap[d.properties.ISO_A3] ? 'rgba(255,85,85,.85)' : 'rgba(255,255,255,.18)')
+          .polygonLabel(d => {
+            const iso = d.properties.ISO_A3;
+            const info = bandMap[iso];
+            const name = d.properties.ADMIN || iso;
+            if (!info) return `<div class="gg-tooltip"><strong>${name}</strong><br><em>Inget band ännu</em></div>`;
+            return `<div class="gg-tooltip"><strong>${name}</strong><br>Band: <b>${info.band}</b>${info.year ? ' ('+info.year+')' : ''}</div>`;
+          });
+      })
+      .catch(err => console.error('GeoJSON-fel:', err));
   </script>
 </body>
 </html>
