@@ -1,51 +1,35 @@
-<!doctype html>
-<html lang="sv">
-<head>
-  <meta charset="utf-8" />
-  <title>PunkGlobe</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    html, body { margin:0; height:100%; background:#000; }
-    #globe-container { width:100%; height:800px; }
-    .gg-tooltip {
-      font-family: Arial, sans-serif;
-      background: rgba(20,20,20,.9);
-      color: #fff;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border:1px solid rgba(255,255,255,.2);
-      pointer-events:none;
-    }
-  </style>
-</head>
-
 <body>
   <div id="globe-container"></div>
 
   <!-- THREE.js -->
-  https://unpkg.com/three@0.158.0/build/three.min.js
-
+  <script src="https://unpkg.com/three@0.158.0/build/three.min
   <!-- Globe.gl -->
   https://unpkg.com/globe.gl@3.9.0/dist/globe.gl.min.js
 
   <!-- Din kod -->
   <script>
+    console.log("Scripts loaded correctly");
+
     const bandMap = {
-      SWE: { country: "Sweden", band: "Refused", link: "https://sv.wikipedia.org/wiki/Refused" }
+      SWE: { country: "Sverige", band: "Refused", year: 1991, link: "https://sv.wikipedia.org/wiki/Refused" },
+      USA: { country: "USA", band: "Dead Kennedys", year: 1978, link: "https://en.wikipedia.org/wiki/Dead_Kennedys" }
     };
 
     const container = document.getElementById('globe-container');
+
     const globe = Globe()
-      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
-      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-dark.jpg')
+      .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
       .backgroundColor('#000')
       (container);
 
-    fetch('https://unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson')
+    fetch('https://unpkg.com/three-globe@2.31.1/example/datasets/ne_110m_admin_0_countries.geojson')
       .then(res => res.json())
       .then(countries => {
-        globe.polygonsData(countries.features);
-      });
+        globe
+          .polygonsData(countries.features.filter(f => f.properties?.ISO_A3 !== 'ATA'))
+          .polygonCapColor(d => bandMap[d.properties.ISO_A3] ? "rgba(255,80,80,0.9)" : "rgba(255,255,255,0.15)");
+      })
+      .catch(err => console.error('GeoJSON-fel: ', err));
   </script>
 </body>
-</html>
