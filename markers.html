@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PunkGlobe – HTML Markers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    html, body { margin:0; height:100%; background:#000; }
+    #globe-container { width:100%; height:800px; position:relative; }
+
+    /* marker styles */
+    .marker {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 3;
+    }
+    .pin {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #ffd35a;
+      border: 2px solid #222;
+      box-shadow: 0 3px 9px rgba(0,0,0,.5);
+      transition: transform .15s ease;
+    }
+    .marker:hover .pin {
+      transform: scale(1.3);
+      background: #ff8a00;
+    }
+
+    .tooltip {
+      position: absolute;
+      transform: translate(-50%, calc(-100% - 10px));
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(20,20,20,.95);
+      color: #fff;
+      font: 14px system-ui, sans-serif;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 8px 18px rgba(0,0,0,.55);
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .12s ease;
+      z-index: 5;
+      min-width: 200px;
+    }
+    .marker:hover .tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    .tooltip b { color:#ffd35a; }
+    .tooltip a { color:#ffc14d; }
+  </style>
+</head>
+
+<body>
+  <div id="globe-container"></div>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0three.min.js</script>
+  https://cdn.jsdelivr.net/npm/globe.gl/dist/globe.gl.min.js</script>
+
+  <script>
+    // MARKERS DATA — add as many as you want
+    const punkBands = [
+      { lat: 59.3293, lng: 18.0686, country:"Sweden", band:"Refused", year:1991, link:"https://sv.wikipedia.org/wiki/Refused" },
+      { lat: 51.5074, lng: -0.1278, country:"United Kingdom", band:"The Clash", year:1976, link:"https://en.wikipedia.org/wiki/The_Clash" },
+      { lat: 37.7749, lng: -122.4194, country:"USA", band:"Dead Kennedys", year:1978, link:"https://en.wikipedia.org/wiki/Dead_Kennedys" },
+      { lat: 52.5200, lng: 13.4050, country:"Germany", band:"Die Ärzte", year:1982, link:"https://en.wikipedia.org/wiki/Die_%C3%84rzte" },
+      { lat: 59.9139, lng: 10.7522, country:"Norway", band:"Turbonegro", year:1989, link:"https://en.wikipedia.org/wiki/Turbonegro" },
+      { lat: 60.1699, lng: 24.9384, country:"Finland", band:"Klamydia", year:1988, link:"https://en.wikipedia.org/wiki/Klamydia" }
+    ];
+
+    const container = document.getElementById('globe-container');
+
+    const world = Globe()
+      .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-dark.jpg')
+      .bumpImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png')
+      .htmlElementsData(punkBands)
+      .htmlElement(d => {
+        const el = document.createElement('div');
+        el.className = 'marker';
+
+        const pin = document.createElement('div');
+        pin.className = 'pin';
+        el.appendChild(pin);
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.innerHTML = `
+          <b>${d.country}</b><br>
+          Band: <b>${d.band}</b> (${d.year})<br>
+          <a href="${d.link}" target="_blank;
+        el.appendChild(tooltip);
+
+        el.onclick = () => window.open(d.link, "_blank");
+        return el;
+      })
+      (container);
+
+    // Controls
+    const controls = world.controls();
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.7;
+
+    // Resize
+    function resize() {
+      world.width(container.clientWidth);
+      world.height(container.clientHeight);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+  </script>
+</body>
+</html>
